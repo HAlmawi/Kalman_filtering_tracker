@@ -22,7 +22,7 @@ def matrix_multiply(a,b):
     return result
 
 def matrix_addition(a,b):
-    
+
 
 def quaterProd(a,b):
     ab = [0]*4
