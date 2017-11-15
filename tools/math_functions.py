@@ -2,8 +2,9 @@ import math
 
 def norm_vector(v):
     sum = 0
-    for num in v:
-        sum = sum + pow(num,2)
+    for i in range(len(v)):
+        for j in range(len(v[0])):
+            sum = sum + pow(v[i][j],2)
     return math.sqrt(sum)
 
 def transpose_matrix(matrix):
@@ -23,18 +24,23 @@ def matrix_multiply(a,b):
     return result
 
 def matrix_addition(a,b):
-    result = [[0 for x in range(len(a))] for y in range(len(a[0]))]
     for i in range(len(a)):
         for j in range(len(a[0])):
-            result[i][j] = a[i][j]+b[i][j]
+            a[i][j] = a[i][j]+b[i][j]
+    return a
+
+def matrix_subtraction(a,b):
+    result = [[0 for x in range(len(a[0]))] for y in range(len(a))]
+    for i in range(len(a)):
+        for j in range(len(a[0])):
+            result[i][j] = a[i][j]-b[j][i]
     return result
 
 def matrix_coeff_mult(a,b):
-    result = [[0 for x in range(len(a))] for y in range(len(a[0]))]
     for i in range(len(a)):
-        for j in range(len(a[0])):
-            result[i][j] = a[i][j]*b
-    return result
+            for j in range(len(a[0])):
+                a[i][j] = a[i][j]*b
+    return a
 
 def matrix_inverse(matrix):
     #matrix of minors
@@ -71,17 +77,17 @@ def get_determinant(a,b):
     return a[0][0]*b[0][0] - a[0][1]*b[0][1] + a[0][2]*b[0][2]
 
 def quaterProd(a,b):
-    ab = [0]*4
-    ab[0] = a[0]*b[0] - a[1]*b[1] - a[2]*b[2] - a[3]*b[3]
-    ab[1] = a[0]*b[1] + a[1]*b[0] + a[2]*b[3] - a[3]*b[2]
-    ab[2] = a[0]*b[2] - a[1]*b[3] + a[2]*b[0] + a[3]*b[1]
-    ab[3] = a[0]*b[3] + a[1]*b[2] - a[2]*b[1] + a[3]*b[0]
+    ab = [[0],[0],[0],[0]]
+    ab[0][0] = a[0][0]*b[0][0] - a[1][0]*b[1][0] - a[2][0]*b[2][0] - a[3][0]*b[3][0]
+    ab[1][0] = a[0][0]*b[1][0] + a[1][0]*b[0][0] + a[2][0]*b[3][0] - a[3][0]*b[2][0]
+    ab[2][0] = a[0][0]*b[2][0] - a[1][0]*b[3][0] + a[2][0]*b[0][0] + a[3][0]*b[1][0]
+    ab[3][0] = a[0][0]*b[3][0] + a[1][0]*b[2][0] - a[2][0]*b[1][0] + a[3][0]*b[0][0]
     return ab
 
 def quaterConj(a):
-    result = [0]*4
-    result[0] = a[0]
-    result[1] = -1*a[1]
-    result[2] = -1*a[2]
-    result[3] = -1*a[3]
+    result = [[0],[0],[0],[0]]
+    result[0][0] = a[0][0]
+    result[1][0] = -1*a[1][0]
+    result[2][0] = -1*a[2][0]
+    result[3][0] = -1*a[3][0]
     return result

@@ -1,6 +1,6 @@
 import sys
-sys.path.append('./')
-from . import math_functions
+sys.path.append('.')
+import math_functions
 
 def world_to_camera(R,P,T):
     return math_function.matrix_multiply(R,math_function.matrix_addition(P,math_function.matrix_coeff_mult(T,-1)))
