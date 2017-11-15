@@ -14,11 +14,12 @@ def transpose_matrix(matrix):
     return transposed_matrix
 
 def matrix_multiply(a,b):
-    result = [[0 for x in range(len(a))] for y in range(len(b[0]))]
+    result = [[0 for x in range(len(b[0]))] for y in range(len(a))]
     for i in range(len(a)):
         for j in range(len(b[0])):
             for k in range(len(b)):
-                result[i][j] = a[i][k]*b[k][j]
+                result[i][j] += a[i][k]*b[k][j]
+
     return result
 
 def matrix_addition(a,b):
