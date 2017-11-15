@@ -1,6 +1,6 @@
 import sys
 sys.path.append('./')
-from . import math_functions
+import math_functions
 
 def IMU_to_Quaternion(g,a,m,q,beta, samplePeriod):
     # Normalize accelerometer measurement
@@ -12,16 +12,11 @@ def IMU_to_Quaternion(g,a,m,q,beta, samplePeriod):
     normalized_m = [num / norm_m for num in m]
 
     # Reference direction of Earth's magnetic field
-    h = math_functions.quaterProd(q,math_functions.quaterProd([0]+normalized_m,math_functions.quaternConj(q)))
-    b = [0] + [math_functions.norm_vector({h[1],h[2]})]+[0]+[h(3)]
+    h = math_functions.quaterProd(q,math_functions.quaterProd([0]+normalized_m,math_functions.quaterConj(q)))
+    b = [0,math_functions.norm_vector([h[1],h[2]]),0,h[3]]
 
     #Gradient decent algorithm corrective step
-    F = [2*(q[1]*q[3] - q[0]*q[3])-normalized_a[0]]\
-        +[2*(q[0]*q[1] - q[2]*q[3])-normalized_a[1]]\
-        +[2*(0.5-pow(q[1],2)-pow(q[2],2))-normalized_a[2]]\
-        +[2*b[1]*(0.5-pow(q[2],2)-pow(q[3],2))+2*b[3]*(q[1]*q[3]-q[0]*q[2])-normalized_m[0]]\
-        +[2*b[1]*(q[1]*q[2]-q[0]*q[3])+2*(b[3]*(q[0]*q[1]+q[2]*q[3]))-normalized_m[1]]\
-        +[2*b[1]*(q[0]*q[2]+q[1]*q[3])+2*b[3]*(0.5-pow(q[1],2)-pow(q[2],2))-normalized_m[2]]
+    F = [[2*(q[1]*q[3] - q[0]*q[3])-normalized_a[0]],[2*(q[0]*q[1] - q[2]*q[3])-normalized_a[1]],[2*(0.5-pow(q[1],2)-pow(q[2],2))-normalized_a[2]],[2*b[1]*(0.5-pow(q[2],2)-pow(q[3],2))+2*b[3]*(q[1]*q[3]-q[0]*q[2])-normalized_m[0]],[2*b[1]*(q[1]*q[2]-q[0]*q[3])+2*(b[3]*(q[0]*q[1]+q[2]*q[3]))-normalized_m[1]],[2*b[1]*(q[0]*q[2]+q[1]*q[3])+2*b[3]*(0.5-pow(q[1],2)-pow(q[2],2))-normalized_m[2]]]
 
     J = [[0 for x in range(4)] for y in range(6)]
     J[0][0] = -2*q[2]
@@ -50,7 +45,7 @@ def IMU_to_Quaternion(g,a,m,q,beta, samplePeriod):
     J[5][3] = 2*b[1]*q[1]
 
     step = math_functions.matrix_multiply(math_functions.transpose_matrix(J),F)
-    norm_s = math_functions.norm_matrix(step)
+    norm_s = math_functions.norm_vector(step)
     normalize_step = [num / norm_s  for num in step] #Normalize step magnitude
 
     #Compute rate of change of quaternion

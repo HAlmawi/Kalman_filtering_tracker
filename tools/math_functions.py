@@ -14,15 +14,61 @@ def transpose_matrix(matrix):
     return transposed_matrix
 
 def matrix_multiply(a,b):
-    result = [[0 for x in range(len(a))] for y in range(len(b[0]))]
+    result = [[0 for x in range(len(b[0]))] for y in range(len(a))]
     for i in range(len(a)):
         for j in range(len(b[0])):
             for k in range(len(b)):
-                result[i][j] = a[i][k]*b[k][j]
+                result[i][j] += a[i][k]*b[k][j]
+
     return result
 
 def matrix_addition(a,b):
+    result = [[0 for x in range(len(a))] for y in range(len(a[0]))]
+    for i in range(len(a)):
+        for j in range(len(a[0])):
+            result[i][j] = a[i][j]+b[i][j]
+    return result
 
+def matrix_coeff_mult(a,b):
+    result = [[0 for x in range(len(a))] for y in range(len(a[0]))]
+    for i in range(len(a)):
+        for j in range(len(a[0])):
+            result[i][j] = a[i][j]*b
+    return result
+
+def matrix_inverse(matrix):
+    #matrix of minors
+    matrix_minors = get_matrix_minors(matrix)
+    #matrix of cofactors
+    matrix_cofactors = get_matrix_cofactors(matrix_minors)
+    #get adjugate matrix
+    adjugate_matrix = transpose_matrix(matrix_cofactors)
+    #multiply by 1/determinant
+    coeff = 1.0/get_determinant(matrix,matrix_minors)
+    return matrix_coeff_mult(adjugate_matrix,coeff)
+
+def get_matrix_minors(a):
+    matrix = [[0 for x in range(3)] for y in range(3)]
+    matrix[0][0] = a[1][1]*a[2][2] - a[1][2]*a[2][1]
+    matrix[0][1] = a[1][0]*a[2][2] - a[1][2]*a[2][0]
+    matrix[0][2] = a[1][0]*a[2][1] - a[1][1]*a[2][0]
+    matrix[1][0] = a[0][1]*a[2][2] - a[0][2]*a[2][1]
+    matrix[1][1] = a[0][0]*a[2][2] - a[0][2]*a[2][0]
+    matrix[1][2] = a[0][0]*a[2][1] - a[0][1]*a[2][0]
+    matrix[2][0] = a[0][1]*a[1][2] - a[0][2]*a[1][1]
+    matrix[2][1] = a[0][0]*a[1][2] - a[0][2]*a[1][0]
+    matrix[2][2] = a[0][0]*a[1][1] - a[0][1]*a[1][0]
+    return matrix
+
+def get_matrix_cofactors(a):
+    a[0][1] = -1*a[0][1]
+    a[1][0] = -1*a[1][0]
+    a[1][2] = -1*a[1][2]
+    a[2][1] = -1*a[2][1]
+    return a
+
+def get_determinant(a,b):
+    return a[0][0]*b[0][0] - a[0][1]*b[0][1] + a[0][2]*b[0][2]
 
 def quaterProd(a,b):
     ab = [0]*4

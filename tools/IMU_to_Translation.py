@@ -2,7 +2,7 @@
 #Input: ax, ay, az the acceleration in x,y,z respectively retrieved from IMU
 #Output: delta_x, delta_y, delta_z the distance moved in time interval
 def calcTranslation(ax,ay,az, delta_t):
-    delta_x = ax * delta_t * delta_t
-    delta_y = ay * delta_t * delta_t
-    delta_z = az * delta_t * delta_t
+    delta_x = ax * pow(delta_t,2)
+    delta_y = ay * pow(delta_t,2)
+    delta_z = az * pow(delta_t,2)
     return delta_x, delta_y, delta_z
