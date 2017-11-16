@@ -7,7 +7,7 @@ import math_functions
 
 # Step 1. Compute the difference between the measurement and the a priori state to get the innovation
 def get_innovation(measurement,pred_state):
-    return measurement - pred_state
+    return math_functions.matrix_subtraction(measurement ,pred_state)
 
 # Step 2. Calculate the innovation covariance
 def calc_innovation_covariance(prev_cov,sigma_R):
