@@ -16,7 +16,7 @@ def create_data():
     filename = "./readings.txt" #Name of file to save in the readings from
     save_filename = "./result_readings.txt" #Name of file to save in the readings from
     rate = 1.0/30.0 #Rate of IMU data is 30 Hz
-    num_readings = 1800 # 1 minute of readings from each device
+    num_readings = 250 # 1 minute of readings from each device
 
     data_functions.randomize_readings(filename,rate,num_readings)
     # include_camera_readings(filename)

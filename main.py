@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import sys
 sys.path.append('./tools')
 sys.path.append('./objects')
@@ -15,8 +17,10 @@ import kalman_update
 import random
 import math
 import math_functions
+import create_data
 
 def main():
+    # create_data.create_data()
     filename = "./result_readings.txt"
     rate = 1.0/30.0
     x = object_x.ObjectX()
@@ -26,6 +30,7 @@ def main():
     sigmaR = [[0.0001],[0.0001],[0.0001],[0.0001]]
     beta = 0.1
     P_Update = math_functions.matrix_coeff_mult(math_functions.get_identity_matrix(4),0.01)
+    X_Coords = [];
     with open(filename, 'r') as file:
         data = file.readlines()
     for i in range(len(data)):
@@ -47,10 +52,11 @@ def main():
             # Set camera's translation matrix to be equal to the result of accelerometer to translation
             c.set_t_m(IMU_to_Translation.calcTranslation(a,c.v0,rate))
             c.update_v(a,rate) #update camera's initial velocity
+            X_Coords.append([x.c[0][0],x.c[1][0],x.c[2][0]])
         else:
             #rest: for X: see if distance traveled is greater than 3m and fix the line
             # for C: check if rotation matrix with translation causes X to be 3m away
-            if int(info[0][1])==0: #X
+            if int(info[0][1])==0:
                 # Get the accelerometer read
                 a = [[float(info[0][2])], [float(info[0][3])], [float(info[0][4])]]
                 # Calculate X's world coordinates
@@ -98,7 +104,15 @@ def main():
     #             Get X's camera coords, if all positive, then add position to input file
                 P = world_to_camera.world_to_camera(R_M,x.w,T_M)
                 x.update_c(P)
-
+                X_Coords.append([x.c[0][0],x.c[1][0],x.c[2][0]])
+    #Plot the coords
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    xs = [p[0] for p in X_Coords]
+    ys = [p[1] for p in X_Coords]
+    zs = [p[2] for p in X_Coords]
+    surf = ax.plot(xs,ys,zs)
+    plt.show()
 
 if __name__ == "__main__":
     main()

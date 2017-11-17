@@ -5,7 +5,7 @@ import world_to_camera
 class ObjectX:
     def __init__(self):
         self.w = [[0.0],[0.0],[0.0]] # position in world
-        self.c = [[0.0],[0.0],[0.0]] # position in world
+        self.c = [[0.0],[0.0],[0.0]] # position in camera
         self.v0 = [[0.0],[0.0],[0.0]]
 
     def calc_world_coords(self,R,T):

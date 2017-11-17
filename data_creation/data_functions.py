@@ -99,12 +99,24 @@ def enforce_specifications(filename,rate,save_filename):
                 #update camera's initial velocity
                 c.update_v(a,rate)
     #             Get X's camera coords, if all positive, then add position to input file
+                #Check if translation is greater than 3m
+                # Check if the distance it traveled is less than 3m
+                if distance_flag(x,T_M) == 0:
+                    # If traveled more than 3m, update the input file, and update the distances in X
+                    s_f.write(info[0][0]+" "+info[0][1]+" "+str(-1*float(info[0][2]))+" "+str(-1*float(info[0][3]))+" "+str(-1*float(info[0][4]))+" ")
+                    T_M[0][0] = -1*T_M[0][0]
+                    T_M[1][0] = -1*T_M[1][0]
+                    T_M[2][0] = -1*T_M[2][0]
                 P = world_to_camera.world_to_camera(R_M,x.w,T_M)
                 x.update_c(P)
+                P = world_to_camera.camera_to_world(R_M,x.c,T_M)
+                x.update_w(P)
+                for i in range(5,12):
+                    s_f.write(str(info[0][i])+" ")
                 if check_in_camera_ref(R_M,T_M,x.w):
-                    s_f.write(data[i][:-3]+"1 "+str(P[0][0])+" "+str(P[1][0])+" "+str(P[2][0])+"\n")
+                    s_f.write("1 "+str(P[0][0])+" "+str(P[1][0])+" "+str(P[2][0])+"\n")
                 else:
-                    s_f.write(data[i])
+                    s_f.write("0\n")
     s_f.close()
     return
 
@@ -112,7 +124,7 @@ def enforce_specifications(filename,rate,save_filename):
 def get_reading(time,XC_flag, position_flag):
     result = str(time)+" "+str(XC_flag)+" "
     #add in accelerometer information ax, ay, az
-    result += str(random.uniform(-1.5,1.5))+" "+str(random.uniform(-1.5,1.5))+" "+str(random.uniform(-1.5,1.5))
+    result += str(random.uniform(-0.5,0.5))+" "+str(random.uniform(-0.5,0.5))+" "+str(random.uniform(-0.5,0.5))
     if XC_flag==1:
         #add in gyroscope information gx, gy, gz
         result += " "+str(random.uniform(-360,360))+" "+str(random.uniform(-360,360))+" "+str(random.uniform(-360,360))+" "
