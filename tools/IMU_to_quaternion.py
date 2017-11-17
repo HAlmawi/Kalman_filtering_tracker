@@ -2,6 +2,15 @@ import sys
 sys.path.append('./')
 import math_functions
 
+
+# Ported Madgwick IMU to Quaternion function
+# Input:
+# 1- g: the gyroscope readings
+# 2- a: the accelerometer readings
+# 3- m: the magnetometer readings
+# 4- q: the previous quaternions
+# 5- beta: the bias
+# 7- samplePeriod: the rate at which readings are captured
 def IMU_to_Quaternion(g,a,m,q,beta, samplePeriod):
     # Normalize accelerometer measurement
     norm_a = math_functions.norm_vector(a)

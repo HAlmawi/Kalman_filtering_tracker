@@ -2,7 +2,9 @@ import sys
 sys.path.append('../tools')
 import world_to_camera
 
+# Creates a camera object
 class ObjectC:
+    # Initialization
     def __init__(self):
         self.r_m =  [[0,0,0],[0,0,0],[0,0,0]] #accelerometer data taken from IMU reading
         self.q =  [[1],[0],[0],[0]] #quaternions
@@ -30,7 +32,7 @@ class ObjectC:
         self.q[1][0] = q[1][0]
         self.q[2][0] = q[2][0]
         self.q[3][0] = q[3][0]
-
+    # Update the initial velocity
     def update_v(self,a,rate):
         self.v0[0][0] = self.v0[0][0]+a[0][0]*rate
         self.v0[1][0] = self.v0[1][0]+a[1][0]*rate

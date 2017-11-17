@@ -1,3 +1,6 @@
+# Function quaternion2rotation(q): transforms quaternion to rotation matrix
+# Input: q the quaternion
+# Output: R the rotation matrix
 def quaternion2rotation(q):
     R = [[0 for x in range(3)] for y in range(3)]
 

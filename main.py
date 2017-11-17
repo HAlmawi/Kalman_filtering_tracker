@@ -19,17 +19,28 @@ import math
 import math_functions
 import create_data
 
+# Main function
 def main():
+    # Create data needed for the program to run
     # create_data.create_data()
     filename = "./result_readings.txt"
+    # Rate in seconds for data input converted from Hz
     rate = 1.0/30.0
+    # Creating X object - handheld with IMU
     x = object_x.ObjectX()
+    # Creating C object - stereo camera system
     c = object_c.ObjectC()
+    # Initializing the gyroscope variance based on random
     gyro_var = [[math.pow(random.random()/180.0*math.pi,2)],[math.pow(random.random()/180.0*math.pi,2)],[math.pow(random.random()/180.0*math.pi,2)]]
+    # Get the Q matrix using the gyroscope variance "readings"
     Q_matrix = kalman_predict.get_Q_matrix(gyro_var)
-    sigmaR = [[0.0001],[0.0001],[0.0001],[0.0001]]
+    # SigmaR in order to construct the measurement covariance matrix
+    sigmaR = [[0.000001],[0.000001],[0.000001],[0.000001]]
+    # Initializing bias for quaternion calculation
     beta = 0.1
+    # Initializing a priori matrix
     P_Update = math_functions.matrix_coeff_mult(math_functions.get_identity_matrix(4),0.01)
+    # Initializing X coords used to visualize plot
     X_Coords = [];
     with open(filename, 'r') as file:
         data = file.readlines()
@@ -37,6 +48,8 @@ def main():
         #first line is to initialize C and X
         info = line_to_IMU.line_to_IMU(data[i])
         if i==0:
+            # timestamp
+            time = float(info[0][0])
             # Initialize X's position
             x.update_c([[float(info[0][12])],[float(info[0][13])],[float(info[0][14])]])
             # Get the accelerometer readings
@@ -46,7 +59,7 @@ def main():
             # Get the magnetometer readings
             m = [[float(info[0][8])], [float(info[0][9])], [float(info[0][10])]]
             # Set camera's quaternions to be equal to the result of IMU to Quaternion
-            c.set_q(IMU_to_quaternion.IMU_to_Quaternion(g,a,m,c.q,beta, rate))
+            c.set_q(IMU_to_quaternion.IMU_to_Quaternion(g,a,m,c.q,beta, time))
             # Set camera's rotation matrix to be equal to the result of Quaternion to Rotation matrix
             c.set_r_m(quaternion_to_rotation.quaternion2rotation(c.q))
             # Set camera's translation matrix to be equal to the result of accelerometer to translation
@@ -54,18 +67,18 @@ def main():
             c.update_v(a,rate) #update camera's initial velocity
             X_Coords.append([x.c[0][0],x.c[1][0],x.c[2][0]])
         else:
-            #rest: for X: see if distance traveled is greater than 3m and fix the line
-            # for C: check if rotation matrix with translation causes X to be 3m away
+            #rest: for X: calculate its movement in the world coordinate space
+            # for C: predict the rotation matrix and translation, predict X's position in C coordinate space, and if observation is present, update the kalman filter
             if int(info[0][1])==0:
                 # Get the accelerometer read
                 a = [[float(info[0][2])], [float(info[0][3])], [float(info[0][4])]]
                 # Calculate X's world coordinates
                 x.calc_world_coords(c.r_m,c.t_m)
-                # Get the distance traveled based on the accelerometer read
-                d = IMU_to_Translation.calcTranslation(a,x.v0,rate)
                 # Update X's initial velocity
                 x.update_v(a,rate)
             else: #C
+                # time
+                time = float(info[0][0])
                 # Get the accelerometer readings
                 a = [[float(info[0][2])], [float(info[0][3])], [float(info[0][4])]]
                 # Get the gyroscope readings
@@ -73,7 +86,7 @@ def main():
                 # Get the magnetometer readings
                 m = [[float(info[0][8])], [float(info[0][9])], [float(info[0][10])]]
                 # Quaternion calculated
-                quatern_C = IMU_to_quaternion.IMU_to_Quaternion(g,a,m,c.q,beta, rate)
+                quatern_C = IMU_to_quaternion.IMU_to_Quaternion(g,a,m,c.q,beta,time)
 
                 #Get F matrix
                 F = kalman_predict.get_F_matrix(g,rate)
