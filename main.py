@@ -12,15 +12,18 @@ import IMU_to_Translation
 import kalman_predict
 import kalman_update
 import random
+import math
 
 def main():
     filename = "./result_readings.txt"
     rate = 1.0/30.0
     x = object_x.ObjectX()
     c = object_c.ObjectC()
-    gyro_var = [[],[],[]]
-    kalman_predict.get_Q_matrix()
+    gyro_var = [[pow(random.random/180*math.pi,2)],[pow(random.random/180*math.pi,2)],[pow(random.random/180*math.pi,2)]]
+    Q_matrix = kalman_predict.get_Q_matrix(gyro_var)
+    sigmaR = [[0.0001],[0.0001],[0.0001],[0.0001]]
     beta = 0.1
+    P_Update = math_functions.matrix_coeff_mult(math_functions.get_identity_matrix(4),0.01)
     with open(filename, 'r') as file:
         data = file.readlines()
     for i in range(len(data)):
@@ -32,7 +35,7 @@ def main():
             # Get the accelerometer readings
             a = [[float(info[0][2])], [float(info[0][3])], [float(info[0][4])]]
             # Get the gyroscope readings
-            g = [[float(info[0][5])], [float(info[0][6])], [float(info[0][7])]]
+            g = [[float(info[0][5])*(math.pi/180.0)], [float(info[0][6])*(math.pi/180.0)], [float(info[0][7])*(math.pi/180.0)]]
             # Get the magnetometer readings
             m = [[float(info[0][8])], [float(info[0][9])], [float(info[0][10])]]
             # Set camera's quaternions to be equal to the result of IMU to Quaternion
@@ -51,22 +54,37 @@ def main():
                 x.calc_world_coords(c.r_m,c.t_m)
                 # Get the distance traveled based on the accelerometer read
                 d = IMU_to_Translation.calcTranslation(a,rate)
-                # Check if the distance it traveled is less than 3m
-                # If traveled more than 3m, update the input file, and update the distances in X
-                d[0][0] = -1*d[0][0]
-                d[1][0] = -1*d[1][0]
-                d[2][0] = -1*d[2][0]
                 x.update_w(d)
             else: #C
-                # Is X outside of Camera reference frame?
                 # Get the accelerometer readings
                 a = [[float(info[0][2])], [float(info[0][3])], [float(info[0][4])]]
                 # Get the gyroscope readings
-                g = [[float(info[0][5])], [float(info[0][6])], [float(info[0][7])]]
+                g = [[float(info[0][5])*(math.pi/180.0)], [float(info[0][6])*(math.pi/180.0)], [float(info[0][7])*(math.pi/180.0)]]
                 # Get the magnetometer readings
                 m = [[float(info[0][8])], [float(info[0][9])], [float(info[0][10])]]
                 # Quaternion calculated
-                Q = IMU_to_quaternion.IMU_to_Quaternion(g,a,m,c.q,beta, rate)
+                quatern_C = IMU_to_quaternion.IMU_to_Quaternion(g,a,m,c.q,beta, rate)
+
+                #Get F matrix
+                F = kalman_predict.get_F_matrix(g,rate)
+                #Kalman predict state -> input: F,c.q
+                quatern_pred = kalman_predict.predict_state(F,c.q)
+                #Kalman predict predict_priori_covariance -> p_predicted = P_update,Q_matrix,F
+                P_predicted = kalman_predict.predict_priori_covariance(P_Update,Q_matrix,F)
+                # If Camera position is known, then kalman update
+                if int(info[0][11])==1:
+                    #get_innovation -> quatern_predicted is kalman predict state, quatern_C is q observed
+                    innovation = kalman_update.get_innovation(quatern_C,quatern_pred)
+                    #calc_innovation_covariance(prev_cov,sigma_R) -> prev_cov = P_Predicted; output=innovation_cov
+                    innovation_cov = kalman_update.calc_innovation_covariance(P_predicted, sigmaR)
+                    #calc_Kalman_gain(prev_cov, innovation_cov) -> prev_cov = P_Predicted
+                    kalman_gain  = kalman_update.calc_Kalman_gain(P_predicted, innovation_cov)
+                    #c.q = update_posteriori(pred_state,kalman_gain,innovation)
+                    c.set_q(kalman_update.update_posteriori(quatern_pred,kalman_gain,innovation))
+                    #p_update = update_posteriori_covariance(kalman_gain, prev_cov)
+                    P_Update = kalman_update.update_posteriori_covariance(kalman_gain,P_predicted)
+                else:
+                    c.set_q(quatern_pred)
                 # Rotation matrix calculated
                 R_M = quaternion_to_rotation.quaternion2rotation(c.q)
                 # Translation matrix calculated
@@ -74,6 +92,7 @@ def main():
     #             Get X's camera coords, if all positive, then add position to input file
                 P = world_to_camera.world_to_camera(R_M,x.w,T_M)
                 x.update_c(P)
+
 
 if __name__ == "__main__":
     main()
