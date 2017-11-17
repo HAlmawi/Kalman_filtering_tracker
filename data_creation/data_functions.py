@@ -49,14 +49,12 @@ def enforce_specifications(filename,rate,save_filename):
             # Get the accelerometer readings
             a = [[float(info[0][2])], [float(info[0][3])], [float(info[0][4])]]
             # Get the gyroscope readings
-            g = [[float(info[0][5])], [float(info[0][6])], [float(info[0][7])]]
+            g = [[float(info[0][5])*(math.pi/180.0)], [float(info[0][6])*(math.pi/180.0)], [float(info[0][7])*(math.pi/180.0)]]
             # Get the magnetometer readings
             m = [[float(info[0][8])], [float(info[0][9])], [float(info[0][10])]]
             # Set camera's quaternions to be equal to the result of IMU to Quaternion
-            test = IMU_to_quaternion.IMU_to_Quaternion(g,a,m,c.q,beta, rate)
             c.set_q(IMU_to_quaternion.IMU_to_Quaternion(g,a,m,c.q,beta, rate))
             # Set camera's rotation matrix to be equal to the result of Quaternion to Rotation matrix
-            test = (c.q)
             c.set_r_m(quaternion_to_rotation.quaternion2rotation(c.q))
             # Set camera's translation matrix to be equal to the result of accelerometer to translation
             c.set_t_m(IMU_to_Translation.calcTranslation(a,rate))
@@ -74,7 +72,7 @@ def enforce_specifications(filename,rate,save_filename):
                 # Check if the distance it traveled is less than 3m
                 if distance_flag(x,d) == 0:
                     # If traveled more than 3m, update the input file, and update the distances in X
-                    s_f.write(str(info[0][0])+" "+str(info[0][1])+" "+str(-1*info[0][2])+" "+str(-1*info[0][3])+" "+str(-1*info[0][4]))
+                    s_f.write(str(info[0][0])+" "+str(info[0][1])+" "+str(-1*info[0][2])+" "+str(-1*info[0][3])+" "+str(-1*info[0][4])+"\n")
                     d[0][0] = -1*d[0][0]
                     d[1][0] = -1*d[1][0]
                     d[2][0] = -1*d[2][0]
@@ -86,7 +84,7 @@ def enforce_specifications(filename,rate,save_filename):
                 # Get the accelerometer readings
                 a = [[float(info[0][2])], [float(info[0][3])], [float(info[0][4])]]
                 # Get the gyroscope readings
-                g = [[float(info[0][5])], [float(info[0][6])], [float(info[0][7])]]
+                g = [[float(info[0][5])*(math.pi/180.0)], [float(info[0][6])*(math.pi/180.0)], [float(info[0][7])*(math.pi/180.0)]]
                 # Get the magnetometer readings
                 m = [[float(info[0][8])], [float(info[0][9])], [float(info[0][10])]]
                 # Quaternion calculated
@@ -99,7 +97,7 @@ def enforce_specifications(filename,rate,save_filename):
                 P = world_to_camera.world_to_camera(R_M,x.w,T_M)
                 x.update_c(P)
                 if check_in_camera_ref(R_M,T_M,x.w):
-                    s_f.write(data[i][:-3]+"1 "+str(P[0][0])+" "+str(P[1][0])+" "+str(P[2][0]))
+                    s_f.write(data[i][:-3]+"1 "+str(P[0][0])+" "+str(P[1][0])+" "+str(P[2][0])+"\n")
                 else:
                     s_f.write(data[i])
     s_f.close()
