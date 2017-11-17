@@ -36,6 +36,13 @@ def matrix_subtraction(a,b):
             result[i][j] = a[i][j]-b[j][i]
     return result
 
+def vector_subtraction(a,b):
+    result = [[0 for x in range(len(a[0]))] for y in range(len(a))]
+    for i in range(len(a)):
+        for j in range(len(a[0])):
+            result[i][j] = a[i][j]-b[i][j]
+    return result
+
 def matrix_coeff_mult(a,b):
     for i in range(len(a)):
             for j in range(len(a[0])):
