@@ -57,7 +57,8 @@ def enforce_specifications(filename,rate,save_filename):
             # Set camera's rotation matrix to be equal to the result of Quaternion to Rotation matrix
             c.set_r_m(quaternion_to_rotation.quaternion2rotation(c.q))
             # Set camera's translation matrix to be equal to the result of accelerometer to translation
-            c.set_t_m(IMU_to_Translation.calcTranslation(a,rate))
+            c.set_t_m(IMU_to_Translation.calcTranslation(a,c.v0,rate))
+            c.update_v(a,rate) #update camera's initial velocity
             s_f.write(data[i])
         else:
             #rest: for X: see if distance traveled is greater than 3m and fix the line
@@ -68,11 +69,13 @@ def enforce_specifications(filename,rate,save_filename):
                 # Calculate X's world coordinates
                 x.calc_world_coords(c.r_m,c.t_m)
                 # Get the distance traveled based on the accelerometer read
-                d = IMU_to_Translation.calcTranslation(a,rate)
+                d = IMU_to_Translation.calcTranslation(a,x.v0,rate)
+                # Update X's initial velocity
+                x.update_v(a,rate)
                 # Check if the distance it traveled is less than 3m
                 if distance_flag(x,d) == 0:
                     # If traveled more than 3m, update the input file, and update the distances in X
-                    s_f.write(str(info[0][0])+" "+str(info[0][1])+" "+str(-1*info[0][2])+" "+str(-1*info[0][3])+" "+str(-1*info[0][4])+"\n")
+                    s_f.write(info[0][0]+" "+info[0][1]+" "+str(-1*float(info[0][2]))+" "+str(-1*float(info[0][3]))+" "+str(-1*float(info[0][4]))+"\n")
                     d[0][0] = -1*d[0][0]
                     d[1][0] = -1*d[1][0]
                     d[2][0] = -1*d[2][0]
@@ -92,7 +95,9 @@ def enforce_specifications(filename,rate,save_filename):
                 # Rotation matrix calculated
                 R_M = quaternion_to_rotation.quaternion2rotation(c.q)
                 # Translation matrix calculated
-                T_M = IMU_to_Translation.calcTranslation(a,rate)
+                T_M = IMU_to_Translation.calcTranslation(a,c.v0,rate)
+                #update camera's initial velocity
+                c.update_v(a,rate)
     #             Get X's camera coords, if all positive, then add position to input file
                 P = world_to_camera.world_to_camera(R_M,x.w,T_M)
                 x.update_c(P)

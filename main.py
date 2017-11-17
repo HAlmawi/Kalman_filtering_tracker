@@ -2,6 +2,7 @@ import sys
 sys.path.append('./tools')
 sys.path.append('./objects')
 sys.path.append('./kalman_filter')
+sys.path.append('./data_creation')
 import world_to_camera
 import object_x
 import object_c
@@ -13,13 +14,14 @@ import kalman_predict
 import kalman_update
 import random
 import math
+import math_functions
 
 def main():
     filename = "./result_readings.txt"
     rate = 1.0/30.0
     x = object_x.ObjectX()
     c = object_c.ObjectC()
-    gyro_var = [[pow(random.random/180*math.pi,2)],[pow(random.random/180*math.pi,2)],[pow(random.random/180*math.pi,2)]]
+    gyro_var = [[math.pow(random.random()/180.0*math.pi,2)],[math.pow(random.random()/180.0*math.pi,2)],[math.pow(random.random()/180.0*math.pi,2)]]
     Q_matrix = kalman_predict.get_Q_matrix(gyro_var)
     sigmaR = [[0.0001],[0.0001],[0.0001],[0.0001]]
     beta = 0.1
@@ -43,7 +45,8 @@ def main():
             # Set camera's rotation matrix to be equal to the result of Quaternion to Rotation matrix
             c.set_r_m(quaternion_to_rotation.quaternion2rotation(c.q))
             # Set camera's translation matrix to be equal to the result of accelerometer to translation
-            c.set_t_m(IMU_to_Translation.calcTranslation(a,rate))
+            c.set_t_m(IMU_to_Translation.calcTranslation(a,c.v0,rate))
+            c.update_v(a,rate) #update camera's initial velocity
         else:
             #rest: for X: see if distance traveled is greater than 3m and fix the line
             # for C: check if rotation matrix with translation causes X to be 3m away
@@ -53,8 +56,9 @@ def main():
                 # Calculate X's world coordinates
                 x.calc_world_coords(c.r_m,c.t_m)
                 # Get the distance traveled based on the accelerometer read
-                d = IMU_to_Translation.calcTranslation(a,rate)
-                x.update_w(d)
+                d = IMU_to_Translation.calcTranslation(a,x.v0,rate)
+                # Update X's initial velocity
+                x.update_v(a,rate)
             else: #C
                 # Get the accelerometer readings
                 a = [[float(info[0][2])], [float(info[0][3])], [float(info[0][4])]]
@@ -88,7 +92,9 @@ def main():
                 # Rotation matrix calculated
                 R_M = quaternion_to_rotation.quaternion2rotation(c.q)
                 # Translation matrix calculated
-                T_M = IMU_to_Translation.calcTranslation(a,rate)
+                T_M = IMU_to_Translation.calcTranslation(a,c.v0,rate)
+                #update camera's initial velocity
+                c.update_v(a,rate)
     #             Get X's camera coords, if all positive, then add position to input file
                 P = world_to_camera.world_to_camera(R_M,x.w,T_M)
                 x.update_c(P)

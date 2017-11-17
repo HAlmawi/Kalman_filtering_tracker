@@ -7,6 +7,7 @@ class ObjectC:
         self.r_m =  [[0,0,0],[0,0,0],[0,0,0]] #accelerometer data taken from IMU reading
         self.q =  [[1],[0],[0],[0]] #quaternions
         self.t_m = [[0],[0],[0]] #translation matrix
+        self.v0 = [[0.0],[0.0],[0.0]] #intial velocity used for translation matrix calculation
     # Set the rotation matrix
     def set_r_m(self,r_m):
         self.r_m[0][0] = r_m[0][0]
@@ -29,3 +30,8 @@ class ObjectC:
         self.q[1][0] = q[1][0]
         self.q[2][0] = q[2][0]
         self.q[3][0] = q[3][0]
+
+    def update_v(self,a,rate):
+        self.v0[0][0] = self.v0[0][0]+a[0][0]*rate
+        self.v0[1][0] = self.v0[1][0]+a[1][0]*rate
+        self.v0[2][0] = self.v0[2][0]+a[2][0]*rate
