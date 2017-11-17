@@ -1,11 +1,11 @@
 import sys
 sys.path.append('./tools/')
-from itertools import islice
-from tools import line_to_IMU
+from data_creation import line_to_IMU
+
 
 def main():
     filename = ""
-    rate = 6
+    rate = 1.0/30.0
     with open(filename, 'r') as infile:
         lines = filename.readlines()
     for line in lines:
